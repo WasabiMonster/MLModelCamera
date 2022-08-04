@@ -8,7 +8,6 @@
 import AVFoundation
 import Foundation
 
-
 struct VideoSpec {
     var fps: Int32?
     var size: CGSize?
@@ -17,7 +16,6 @@ struct VideoSpec {
 typealias ImageBufferHandler = ((_ imageBuffer: CVPixelBuffer, _ timestamp: CMTime, _ outputBuffer: CVPixelBuffer?) -> ())
 
 class VideoCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
-
     private let captureSession = AVCaptureSession()
     private var videoDevice: AVCaptureDevice!
     private var videoConnection: AVCaptureConnection!
@@ -25,8 +23,7 @@ class VideoCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     
     var imageBufferHandler: ImageBufferHandler?
     
-    init(cameraType: CameraType, preferredSpec: VideoSpec?, previewContainer: CALayer?)
-    {
+    init(cameraType: CameraType, preferredSpec: VideoSpec?, previewContainer: CALayer?) {
         super.init()
         
         videoDevice = cameraType.captureDevice()
@@ -58,6 +55,9 @@ class VideoCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
         // setup preview
         if let previewContainer = previewContainer {
             let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            
+            print("* 072522 * -> Setting up Preview with: \(captureSession)")
+            
             previewLayer.frame = previewContainer.bounds
             previewLayer.contentsGravity = CALayerContentsGravity.resizeAspect
             previewLayer.videoGravity = .resizeAspect
@@ -76,7 +76,6 @@ class VideoCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
                 fatalError()
             }
             captureSession.addOutput(videoDataOutput)
-
             videoConnection = videoDataOutput.connection(with: .video)
         }
         
@@ -133,18 +132,21 @@ class VideoCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
     
     func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-//        print("\(self.classForCoder)/" + #function)
+        // print("\(self.classForCoder)/" + #function)
     }
     
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    func captureOutput(
+        _ output: AVCaptureOutput,
+        didOutput sampleBuffer: CMSampleBuffer,
+        from connection: AVCaptureConnection
+    ) {
         // FIXME: temp
         if connection.videoOrientation != .portrait {
             connection.videoOrientation = .portrait
             return
         }
         
-        if let imageBufferHandler = imageBufferHandler, let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) , connection == videoConnection
-        {
+        if let imageBufferHandler = imageBufferHandler, let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer), connection == videoConnection {
             let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
             imageBufferHandler(imageBuffer, timestamp, nil)
         }

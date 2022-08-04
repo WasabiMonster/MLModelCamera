@@ -41,6 +41,7 @@ class ViewController: UIViewController {
         videoCapture = VideoCapture(cameraType: .back,
                                     preferredSpec: spec,
                                     previewContainer: previewView.layer)
+
         videoCapture.imageBufferHandler = {[unowned self] (imageBuffer, timestamp, outputBuffer) in
             let delay = CACurrentMediaTime() - timestamp.seconds
             if delay > frameInterval {
@@ -120,6 +121,7 @@ class ViewController: UIViewController {
     }
     
     private func runModel(imageBuffer: CVPixelBuffer) {
+        // print("Run Model...")
         guard let model = selectedVNModel else { return }
         let handler = VNImageRequestHandler(cvPixelBuffer: imageBuffer)
         
@@ -141,7 +143,6 @@ class ViewController: UIViewController {
         }
     }
 
-    @available(iOS 12.0, *)
     private func processObjectDetectionObservations(_ results: [VNRecognizedObjectObservation]) {
         bbView.observations = results
         DispatchQueue.main.async { [weak self] in
@@ -155,12 +156,16 @@ class ViewController: UIViewController {
     private func processClassificationObservations(_ results: [VNClassificationObservation]) {
         var firstResult = ""
         var others = ""
+        
+        var shouldDisplayBorder: Bool = false
+        
         for i in 0...10 {
             guard i < results.count else { break }
             let result = results[i]
             let confidence = String(format: "%.2f", result.confidence * 100)
             if i==0 {
                 firstResult = "\(result.identifier) \(confidence)"
+                if result.identifier == "house" && result.confidence >= 0.8 { shouldDisplayBorder = true }
             } else {
                 others += "\(result.identifier) \(confidence)\n"
             }
@@ -170,6 +175,16 @@ class ViewController: UIViewController {
             self.resultView.isHidden = false
             self.resultLabel.text = firstResult
             self.othersLabel.text = others
+            
+            if shouldDisplayBorder {
+                self.previewView.layer.borderColor = UIColor.green.cgColor
+                self.previewView.layer.backgroundColor = UIColor.green.cgColor
+                self.previewView.layer.borderWidth = 4
+            } else {
+                self.previewView.layer.borderColor = UIColor.clear.cgColor
+                self.previewView.layer.backgroundColor = UIColor.clear.cgColor
+                self.previewView.layer.borderWidth = 0
+            }
         })
     }
 
