@@ -77,30 +77,9 @@ class VideoCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
             }
             captureSession.addOutput(videoDataOutput)
             videoConnection = videoDataOutput.connection(with: .video)
-        }
-        
-        // setup audio output
-        do {
-            let audioDataOutput = AVCaptureAudioDataOutput()
-            let queue = DispatchQueue(label: "com.shu223.audiosamplequeue")
-            audioDataOutput.setSampleBufferDelegate(self, queue: queue)
-            guard captureSession.canAddOutput(audioDataOutput) else {
-                fatalError()
-            }
-            captureSession.addOutput(audioDataOutput)
+            print("*Should come after preview set up: \(String(describing: videoConnection))")
         }
 
-        // setup asset writer
-        do {
-        }
-        /*
-
-        // Asset Writer
-        self.assetWriterManager = [[TTMAssetWriterManager alloc] initWithVideoDataOutput:videoDataOutput
-                                                                         audioDataOutput:audioDataOutput
-                                                                           preferredSize:preferredSize
-                                                                                mirrored:(cameraType == CameraTypeFront)];
-         */
     }
     
     func startCapture() {

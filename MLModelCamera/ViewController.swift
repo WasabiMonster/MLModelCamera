@@ -62,7 +62,7 @@ class ViewController: UIViewController {
             modelUrls.append(compiledUrl)
         }
         
-        selectModel(url: modelUrls.first!)
+        selectModel(url: modelUrls[2]) // modelUrls.first!
         
         // scaleFill
         cropAndScaleOptionSelector.selectedSegmentIndex = 2
@@ -138,6 +138,7 @@ class ViewController: UIViewController {
         
         do {
             try handler.perform([request])
+            // print("run model success...")
         } catch {
             print("failed to perform")
         }
